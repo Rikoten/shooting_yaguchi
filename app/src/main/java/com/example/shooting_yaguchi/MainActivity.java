@@ -11,6 +11,7 @@ import android.text.Layout;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
     int layoutWidth;
     int layoutHeight;
+    int FirstL, FirstT;
 
     int line[] = new int[6];
 
@@ -42,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView iv_yaguchi;
     ImageView[] iv_bullet = new ImageView[7];
     TextView tv;
-    Button start;
+    ImageButton start;
 
     Handler handler1;
     Handler handler2;
@@ -50,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
     int bulletWidth, bulletHeight;
 
     boolean FirstLaunch = true;
+
+    Timer timer;
 
 
     @Override
@@ -60,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         iv_right = findViewById(R.id.right);
         iv_left = findViewById(R.id.left);
         iv_yaguchi = findViewById(R.id.yaguchi);
-        start = findViewById(R.id.button);
+        start = findViewById(R.id.start);
 
         iv_bullet[1] = findViewById(R.id.bullet1);
         iv_bullet[2] = findViewById(R.id.bullet2);
@@ -68,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
         iv_bullet[4] = findViewById(R.id.bullet4);
         iv_bullet[5] = findViewById(R.id.bullet5);
 
+        FirstL = iv_bullet[1].getLeft();
+        FirstT = iv_bullet[1].getTop();
 
         bulletWidth = iv_bullet[1].getWidth();
         bulletHeight = iv_bullet[1].getHeight();
@@ -115,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
                 tv = findViewById(R.id.textView2);
                 tv.setVisibility(INVISIBLE);
                 n = 1;
-                Timer timer;
                 timer = new Timer();
                 if(FirstLaunch) {
                     line[1] = (int) (iv_yaguchi.getLeft() - 2 * (float) layoutWidth / 7 + (iv_yaguchi.getWidth() - iv_bullet[1].getWidth()) / 2);
@@ -126,15 +131,19 @@ public class MainActivity extends AppCompatActivity {
                 }
                 FirstLaunch = false;
                 start.setEnabled(false);
-
-                operate(timer, handler1);
+                iv_yaguchi.setImageResource(R.drawable.dod_yaguchi);
+                for (int l = 1; l <= 5; l++) {
+                    iv_bullet[l].setVisibility(INVISIBLE);
+                    //iv_bullet[l].layout(FirstL, FirstT, FirstL+bulletWidth, FirstT+bulletHeight);
+                }
+                operate(handler1);
             }
         });
 
         handler2 = new Handler();
     }
 
-    private void operate(Timer timer, final Handler handler1) {
+    private void operate(final Handler handler1) {
         timer.scheduleAtFixedRate(
                 new TimerTask()
                 {
@@ -160,26 +169,27 @@ public class MainActivity extends AppCompatActivity {
                                 iv_bullet[i].layout(currentLine[i], iv_bullet[i].getTop() + layoutHeight / 8, currentLine[i] + iv_bullet[i].getWidth(),
                                         iv_bullet[i].getTop() + iv_bullet[i].getHeight() + layoutHeight / 8);
 
-                                if (iv_bullet[i].getTop() > layoutHeight) {
-                                    //ゲームオーバー処理
-                                    handler1.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            for(int l = 1; l <= 5; l++)  iv_bullet[l].setVisibility(INVISIBLE);
-                                            tv.setVisibility(VISIBLE);
-                                            start.setEnabled(true);
-                                        }
-                                    });
-                                    cancel();
+                                if (iv_bullet[i].getTop()+iv_bullet[i].getHeight() > iv_left.getTop()) {
+                                    if(i !=  5) {
+                                        //ゲームオーバー処理
+
+                                        Log.d("totta?", "sita");
+                                        GameOver();
+                                        Log.d("why", "called"+i);
+                                    }else{
+                                        Random random = new Random();
+                                        int WhichLine = random.nextInt(5) + 1;
+                                        currentLine[5] = line[WhichLine];
+                                        iv_bullet[5].layout(currentLine[5], -layoutHeight * 3 / 8, currentLine[5] + iv_bullet[5].getWidth(), -layoutHeight * 3 / 8 + iv_bullet[5].getHeight());
+                                    }
                                 }
                             }
                         }
                         judge();
-                        Log.d("totta?", "judge was called by time");
                         n++;
 
                     }
-                }, 0, 450);
+                }, 0, 400);
     }
 
 
@@ -192,14 +202,32 @@ public class MainActivity extends AppCompatActivity {
                 k = j;
             }
         }
-        if(k != 0) {
+        if(k != 0 && k != 5) {
             //弾丸が衝突していた時の挙動
             Random random = new Random();
             int WhichLine = random.nextInt(5) + 1;
             currentLine[k] = line[WhichLine];
-            iv_bullet[k].layout(currentLine[k], -layoutHeight * 3 / 8, currentLine[k] + iv_bullet[k].getWidth(), -layoutHeight * 3 / 8 + iv_bullet[k].getHeight());
+            iv_bullet[k].layout(currentLine[k], -layoutHeight * 2 / 8, currentLine[k] + iv_bullet[k].getWidth(), -layoutHeight * 2 / 8 + iv_bullet[k].getHeight());
             score = score + 10;
+        }else if(k == 5 && iv_bullet[5].getVisibility() == VISIBLE){
+
+            Log.d("why", "aka");
+            GameOver();
+            k = 0;
         }
+    }
+
+    private void GameOver() {
+        handler1.post(new Runnable() {
+            @Override
+            public void run() {
+
+                tv.setVisibility(VISIBLE);
+                iv_yaguchi.setImageResource(R.drawable.surprised_yaguchi);
+                start.setEnabled(true);
+                timer.cancel();
+            }
+        });
     }
 
 
