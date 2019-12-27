@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView iv_left;
     ImageView iv_yaguchi;
     ImageView[] iv_bullet = new ImageView[7];
-    TextView tv;
+    ImageView go;
     ImageButton start;
 
     Handler handler1;
@@ -118,8 +118,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //スタートボタンが押された処理
-                tv = findViewById(R.id.textView2);
-                tv.setVisibility(INVISIBLE);
+                go = findViewById(R.id.gameover);
+                go.setVisibility(INVISIBLE);
                 n = 1;
                 timer = new Timer();
                 if(FirstLaunch) {
@@ -166,10 +166,10 @@ public class MainActivity extends AppCompatActivity {
                         for(i = 1; i <= 5; i++) {
                             if(iv_bullet[i].getVisibility() == VISIBLE) {
                                 //単位秒ごとに一定距離進める
-                                iv_bullet[i].layout(currentLine[i], iv_bullet[i].getTop() + layoutHeight / 8, currentLine[i] + iv_bullet[i].getWidth(),
-                                        iv_bullet[i].getTop() + iv_bullet[i].getHeight() + layoutHeight / 8);
+                                iv_bullet[i].layout(currentLine[i], iv_bullet[i].getTop() + layoutHeight / 10, currentLine[i] + iv_bullet[i].getWidth(),
+                                        iv_bullet[i].getTop() + iv_bullet[i].getHeight() + layoutHeight / 10);
 
-                                if (iv_bullet[i].getTop()+iv_bullet[i].getHeight() > iv_left.getTop()) {
+                                if (iv_bullet[i].getTop()+iv_bullet[i].getHeight() > layoutHeight) {
                                     if(i !=  5) {
                                         //ゲームオーバー処理
 
@@ -179,8 +179,8 @@ public class MainActivity extends AppCompatActivity {
                                     }else{
                                         Random random = new Random();
                                         int WhichLine = random.nextInt(5) + 1;
-                                        currentLine[5] = line[WhichLine];
-                                        iv_bullet[5].layout(currentLine[5], -layoutHeight * 3 / 8, currentLine[5] + iv_bullet[5].getWidth(), -layoutHeight * 3 / 8 + iv_bullet[5].getHeight());
+                                        if(line[WhichLine] != currentLine[1])  currentLine[5] = line[WhichLine];
+                                        iv_bullet[5].layout(currentLine[5], -layoutHeight * 3 / 10, currentLine[5] + iv_bullet[5].getWidth(), -layoutHeight * 3 / 10+ iv_bullet[5].getHeight());
                                     }
                                 }
                             }
@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
                         n++;
 
                     }
-                }, 0, 400);
+                }, 0, 350);
     }
 
 
@@ -198,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
         int k = 0;
         for(j = 1; j <= 5; j++){
             if(iv_yaguchi.getLeft() < iv_bullet[j].getLeft()+iv_bullet[j].getWidth() && iv_yaguchi.getLeft()+iv_yaguchi.getWidth() > iv_bullet[j].getLeft()
-                    && iv_yaguchi.getTop() < iv_bullet[j].getTop()+iv_bullet[j].getHeight() && iv_yaguchi.getTop()+iv_yaguchi.getHeight()/2 > iv_bullet[j].getTop()) {
+                    && iv_yaguchi.getTop() < iv_bullet[j].getTop()+iv_bullet[j].getHeight() && iv_yaguchi.getTop()+iv_yaguchi.getHeight() > iv_bullet[j].getTop()) {
                 k = j;
             }
         }
@@ -207,10 +207,9 @@ public class MainActivity extends AppCompatActivity {
             Random random = new Random();
             int WhichLine = random.nextInt(5) + 1;
             currentLine[k] = line[WhichLine];
-            iv_bullet[k].layout(currentLine[k], -layoutHeight * 2 / 8, currentLine[k] + iv_bullet[k].getWidth(), -layoutHeight * 2 / 8 + iv_bullet[k].getHeight());
+            iv_bullet[k].layout(currentLine[k], -layoutHeight * 2 / 10, currentLine[k] + iv_bullet[k].getWidth(), -layoutHeight * 2 / 10 + iv_bullet[k].getHeight());
             score = score + 10;
         }else if(k == 5 && iv_bullet[5].getVisibility() == VISIBLE){
-
             Log.d("why", "aka");
             GameOver();
             k = 0;
@@ -222,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
 
-                tv.setVisibility(VISIBLE);
+                go.setVisibility(VISIBLE);
                 iv_yaguchi.setImageResource(R.drawable.surprised_yaguchi);
                 start.setEnabled(true);
                 timer.cancel();
