@@ -104,17 +104,17 @@
         app:layout_constraintVertical_bias="0.115"
         app:srcCompat="@drawable/poison" />
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
+    <ImageView
+        android:id="@+id/gameover"
+        android:layout_width="288dp"
         android:layout_height="wrap_content"
-        android:text="GAME OVER"
         android:textSize="36sp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/gameover" />
 
     <TextView
         android:id="@+id/tv_score"

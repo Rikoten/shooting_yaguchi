@@ -3,19 +3,13 @@ package com.example.shooting_yaguchi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
-import android.text.Layout;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.Random;
 import java.util.Timer;
@@ -24,15 +18,11 @@ import java.util.TimerTask;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
+
 public class MainActivity extends AppCompatActivity {
 
 
-    int layoutWidth;
-    int layoutHeight;
-    int FirstL, FirstT;
-
     int line[] = new int[6];
-
     int currentLine[] = new int[7];
 
     int score = 0;
@@ -45,11 +35,12 @@ public class MainActivity extends AppCompatActivity {
     ImageView[] iv_bullet = new ImageView[7];
     ImageView go;
     ImageButton start;
-
+    TextView tv_score;
     Handler handler1;
-    Handler handler2;
 
     int bulletWidth, bulletHeight;
+    int yaguchiWidth, yaguchiHeight;
+    int layoutWidth, layoutHeight;
 
     boolean FirstLaunch = true;
 
@@ -65,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         iv_left = findViewById(R.id.left);
         iv_yaguchi = findViewById(R.id.yaguchi);
         start = findViewById(R.id.start);
+        tv_score = findViewById(R.id.tv_score);
 
         iv_bullet[1] = findViewById(R.id.bullet1);
         iv_bullet[2] = findViewById(R.id.bullet2);
@@ -72,11 +64,6 @@ public class MainActivity extends AppCompatActivity {
         iv_bullet[4] = findViewById(R.id.bullet4);
         iv_bullet[5] = findViewById(R.id.bullet5);
 
-        FirstL = iv_bullet[1].getLeft();
-        FirstT = iv_bullet[1].getTop();
-
-        bulletWidth = iv_bullet[1].getWidth();
-        bulletHeight = iv_bullet[1].getHeight();
 
         iv_right.setOnClickListener(
                 new View.OnClickListener() {
@@ -86,12 +73,9 @@ public class MainActivity extends AppCompatActivity {
                         int Tside = iv_yaguchi.getTop();
                         int nextL = (int)(Lside+(float)layoutWidth/7);
 
-                        if(nextL+iv_yaguchi.getWidth() > layoutWidth) nextL = Lside;   //画面からフェードアウトさせない処理
-                        iv_yaguchi.layout(nextL, Tside, nextL+iv_yaguchi.getWidth(), Tside+iv_yaguchi.getHeight());
+                        if(nextL+yaguchiWidth > layoutWidth) nextL = Lside;   //画面からフェードアウトさせない処理
+                        iv_yaguchi.layout(nextL, Tside, nextL+yaguchiWidth, Tside+yaguchiHeight);
                         judge();
-
-
-                        Log.d("debug", "nextL is "+nextL);
                     }
                 }
         );
@@ -104,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                         int nextL = (int)(Lside-(float)layoutWidth/7) + 1;
 
                         if(nextL < 0) nextL = Lside;  //画面からフェードアウトさせない処理
-                        iv_yaguchi.layout(nextL, Tside, nextL+iv_yaguchi.getWidth(), Tside+iv_yaguchi.getHeight());
+                        iv_yaguchi.layout(nextL, Tside, nextL+yaguchiWidth, Tside+yaguchiHeight);
                         judge();
 
                         Log.d("debug", "nextL is "+nextL);
@@ -118,78 +102,66 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //スタートボタンが押された処理
+
                 go = findViewById(R.id.gameover);
                 go.setVisibility(INVISIBLE);
-                n = 1;
                 timer = new Timer();
+
                 if(FirstLaunch) {
-                    line[1] = (int) (iv_yaguchi.getLeft() - 2 * (float) layoutWidth / 7 + (iv_yaguchi.getWidth() - iv_bullet[1].getWidth()) / 2);
-                    line[2] = (int) (iv_yaguchi.getLeft() - (float) layoutWidth / 7 + (iv_yaguchi.getWidth() - iv_bullet[1].getWidth()) / 2);
-                    line[3] = iv_yaguchi.getLeft() + (iv_yaguchi.getWidth() - iv_bullet[1].getWidth()) / 2;
-                    line[4] = (int) (iv_yaguchi.getLeft() + (float) layoutWidth / 7 + (iv_yaguchi.getWidth() - iv_bullet[1].getWidth()) / 2);
-                    line[5] = (int) (iv_yaguchi.getLeft() + 2 * (float) layoutWidth / 7 + (iv_yaguchi.getWidth() - iv_bullet[1].getWidth()) / 2);
+                    bulletWidth = iv_bullet[1].getWidth();
+                    bulletHeight = iv_bullet[1].getHeight();
+                    yaguchiWidth = iv_yaguchi.getWidth();
+                    yaguchiHeight = iv_yaguchi.getHeight();
+
+                    line[1] = (int) (iv_yaguchi.getLeft() - 2 * (float) layoutWidth / 7 + (yaguchiWidth - bulletWidth) / 2);
+                    line[2] = (int) (iv_yaguchi.getLeft() - (float) layoutWidth / 7 + (yaguchiWidth - bulletWidth) / 2);
+                    line[3] = iv_yaguchi.getLeft() + (yaguchiWidth - bulletWidth) / 2;
+                    line[4] = (int) (iv_yaguchi.getLeft() + (float) layoutWidth / 7 + (yaguchiWidth - bulletWidth) / 2);
+                    line[5] = (int) (iv_yaguchi.getLeft() + 2 * (float) layoutWidth / 7 + (yaguchiWidth - bulletWidth) / 2);
                 }
+
                 FirstLaunch = false;
                 start.setEnabled(false);
+                score = 0;
                 iv_yaguchi.setImageResource(R.drawable.dod_yaguchi);
+
                 for (int l = 1; l <= 5; l++) {
-                    iv_bullet[l].setVisibility(INVISIBLE);
-                    //iv_bullet[l].layout(FirstL, FirstT, FirstL+bulletWidth, FirstT+bulletHeight);
+                    iv_bullet[l].setVisibility(VISIBLE);
+                    currentLine[l] = line[l];
+                    iv_bullet[l].layout(line[l], 0 - layoutHeight * l / 4, line[l] + bulletWidth, bulletHeight- layoutHeight * l / 4);
                 }
-                operate(handler1);
+                operate();
             }
         });
-
-        handler2 = new Handler();
     }
 
-    private void operate(final Handler handler1) {
+    private void operate() {
         timer.scheduleAtFixedRate(
                 new TimerTask()
                 {
                     @Override
                     public void run()
                     {
-                        //450ミリ秒ごとに繰り返す
-                        if(n <= 10 && n % 2 == 0){
-                            currentLine[n/2] = line[n/2];
-                            handler1.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    //弾丸表示
-                                    iv_bullet[n/2].setVisibility(VISIBLE);
-                                }
-                            });
-                            iv_bullet[n/2].layout(line[n/2], 0, line[n/2] + iv_bullet[n/2].getWidth(), iv_bullet[n/2].getHeight());
-                        }
-
                         for(i = 1; i <= 5; i++) {
-                            if(iv_bullet[i].getVisibility() == VISIBLE) {
-                                //単位秒ごとに一定距離進める
-                                iv_bullet[i].layout(currentLine[i], iv_bullet[i].getTop() + layoutHeight / 10, currentLine[i] + iv_bullet[i].getWidth(),
-                                        iv_bullet[i].getTop() + iv_bullet[i].getHeight() + layoutHeight / 10);
+                            //単位秒ごとに一定距離進める
+                            iv_bullet[i].layout(currentLine[i], iv_bullet[i].getTop() + layoutHeight / 8, currentLine[i] + bulletWidth,
+                                    iv_bullet[i].getTop() + bulletHeight + layoutHeight / 8);
 
-                                if (iv_bullet[i].getTop()+iv_bullet[i].getHeight() > layoutHeight) {
-                                    if(i !=  5) {
-                                        //ゲームオーバー処理
-
-                                        Log.d("totta?", "sita");
-                                        GameOver();
-                                        Log.d("why", "called"+i);
-                                    }else{
-                                        Random random = new Random();
-                                        int WhichLine = random.nextInt(5) + 1;
-                                        if(line[WhichLine] != currentLine[1])  currentLine[5] = line[WhichLine];
-                                        iv_bullet[5].layout(currentLine[5], -layoutHeight * 3 / 10, currentLine[5] + iv_bullet[5].getWidth(), -layoutHeight * 3 / 10+ iv_bullet[5].getHeight());
-                                    }
+                            if (iv_bullet[i].getTop()+bulletHeight > layoutHeight) {
+                                if(i !=  5) {
+                                    GameOver();
+                                }else{
+                                    Random random = new Random();
+                                    int WhichLine = random.nextInt(5) + 1;
+                                    currentLine[5] = line[WhichLine];
+                                    iv_bullet[5].layout(currentLine[5], -layoutHeight * 2 / 8, currentLine[5] + bulletWidth, -layoutHeight * 2 / 8 + bulletHeight);
                                 }
                             }
                         }
                         judge();
                         n++;
-
                     }
-                }, 0, 350);
+                }, 0, 270);
     }
 
 
@@ -197,8 +169,8 @@ public class MainActivity extends AppCompatActivity {
         //衝突判定
         int k = 0;
         for(j = 1; j <= 5; j++){
-            if(iv_yaguchi.getLeft() < iv_bullet[j].getLeft()+iv_bullet[j].getWidth() && iv_yaguchi.getLeft()+iv_yaguchi.getWidth() > iv_bullet[j].getLeft()
-                    && iv_yaguchi.getTop() < iv_bullet[j].getTop()+iv_bullet[j].getHeight() && iv_yaguchi.getTop()+iv_yaguchi.getHeight() > iv_bullet[j].getTop()) {
+            if(iv_yaguchi.getLeft() < iv_bullet[j].getLeft()+bulletWidth && iv_yaguchi.getLeft()+yaguchiWidth > iv_bullet[j].getLeft()
+                    && iv_yaguchi.getTop() < iv_bullet[j].getTop()+bulletHeight && iv_yaguchi.getTop()+yaguchiHeight > iv_bullet[j].getTop()) {
                 k = j;
             }
         }
@@ -207,26 +179,29 @@ public class MainActivity extends AppCompatActivity {
             Random random = new Random();
             int WhichLine = random.nextInt(5) + 1;
             currentLine[k] = line[WhichLine];
-            iv_bullet[k].layout(currentLine[k], -layoutHeight * 2 / 10, currentLine[k] + iv_bullet[k].getWidth(), -layoutHeight * 2 / 10 + iv_bullet[k].getHeight());
+            iv_bullet[k].layout(currentLine[k], -layoutHeight * 4 / 8, currentLine[k] + bulletWidth, -layoutHeight * 4 / 8 + bulletHeight);
             score = score + 10;
+            Log.d("score", "score is " + score);
+
         }else if(k == 5 && iv_bullet[5].getVisibility() == VISIBLE){
             Log.d("why", "aka");
-            GameOver();
             k = 0;
         }
     }
 
     private void GameOver() {
+        //ゲームオーバー処理
         handler1.post(new Runnable() {
             @Override
             public void run() {
-
                 go.setVisibility(VISIBLE);
                 iv_yaguchi.setImageResource(R.drawable.surprised_yaguchi);
                 start.setEnabled(true);
                 timer.cancel();
+                for(i = 1; i <= 5; i++) iv_bullet[i].setVisibility(INVISIBLE);
             }
         });
+        n = 1;
     }
 
 
