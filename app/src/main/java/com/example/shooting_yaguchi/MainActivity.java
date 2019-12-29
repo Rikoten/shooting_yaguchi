@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.Random;
@@ -36,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView go;
     ImageButton start;
     TextView tv_score;
-    Handler handler1;
+    Handler handler1, handler2;
 
     int bulletWidth, bulletHeight;
     int yaguchiWidth, yaguchiHeight;
@@ -56,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
         iv_left = findViewById(R.id.left);
         iv_yaguchi = findViewById(R.id.yaguchi);
         start = findViewById(R.id.start);
-        tv_score = findViewById(R.id.tv_score);
 
         iv_bullet[1] = findViewById(R.id.bullet1);
         iv_bullet[2] = findViewById(R.id.bullet2);
@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
+
         iv_left.setOnClickListener(
                 new View.OnClickListener() {
                     public void onClick(View v) {
@@ -90,8 +91,6 @@ public class MainActivity extends AppCompatActivity {
                         if(nextL < 0) nextL = Lside;  //画面からフェードアウトさせない処理
                         iv_yaguchi.layout(nextL, Tside, nextL+yaguchiWidth, Tside+yaguchiHeight);
                         judge();
-
-                        Log.d("debug", "nextL is "+nextL);
                     }
                 }
         );
@@ -102,10 +101,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //スタートボタンが押された処理
-
-                go = findViewById(R.id.gameover);
-                go.setVisibility(INVISIBLE);
-                timer = new Timer();
 
                 if(FirstLaunch) {
                     bulletWidth = iv_bullet[1].getWidth();
@@ -120,12 +115,16 @@ public class MainActivity extends AppCompatActivity {
                     line[5] = (int) (iv_yaguchi.getLeft() + 2 * (float) layoutWidth / 7 + (yaguchiWidth - bulletWidth) / 2);
                 }
 
+                go = findViewById(R.id.gameover);
+                go.setVisibility(INVISIBLE);
+                timer = new Timer();
                 FirstLaunch = false;
                 start.setEnabled(false);
                 score = 0;
                 iv_yaguchi.setImageResource(R.drawable.dod_yaguchi);
 
                 for (int l = 1; l <= 5; l++) {
+                    //弾丸を初期位置にセット
                     iv_bullet[l].setVisibility(VISIBLE);
                     currentLine[l] = line[l];
                     iv_bullet[l].layout(line[l], 0 - layoutHeight * l / 4, line[l] + bulletWidth, bulletHeight- layoutHeight * l / 4);
@@ -185,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
 
         }else if(k == 5 && iv_bullet[5].getVisibility() == VISIBLE){
             Log.d("why", "aka");
+            GameOver();
             k = 0;
         }
     }
@@ -213,5 +213,12 @@ public class MainActivity extends AppCompatActivity {
         ConstraintLayout layout = findViewById(R.id.activity_main);
         layoutWidth = layout.getWidth();
         layoutHeight = layout.getHeight();
+    }
+
+
+    public void onStop(){
+        super.onStop();
+
+        GameOver();
     }
 }
